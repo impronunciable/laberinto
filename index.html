@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v2.6.1/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.rawgit.com/ngokevin/kframe/d7bd9968/components/sun-sky/dist/aframe-sun-sky.min.js"></script>
+
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <img src="assets/suelo.jpg"
+          id="suelo" />
+        <img src="assets/pared.jpg"
+          id="pared" />
+      </a-assets>
+
+      <a-entity id="jugador"
+        camera
+        kinematic-body
+        universal-controls
+        position="0 1.6 0">
+
+        <a-cursor fuse="true" fuse-timeout="800"></a-cursor>
+
+        <a-text value="" width="4" id="score"
+          color="black" font="mozillavr" position="0 -.5 -1"
+          anchor="center" align="center"></a-text>
+      </a-entity>
+
+      <a-sun-sky material="sunPosition: 0 1 0;"></a-sun-sky>
+
+      <a-entity id="muros"></a-entity>
+
+      <a-entity id="premios"></a-entity>
+
+      <a-grid static-body src="#suelo"></a-grid>
+    </a-scene>
+    <script>
+// 0 significa nada
+// 1 significa muro
+// 2 significa jugador
+// 3 significa premio
+var mapa = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+  [0, 0, 1, 0, 3, 0, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 1, 1, 0, 1, 0],
+  [0, 0, 1, 0, 0, 2, 0, 3, 1, 0],
+  [0, 1, 1, 1, 1, 0, 0, 1, 1, 0],
+  [0, 1, 0, 0, 3, 0, 1, 1, 0, 0],
+  [0, 1, 3, 0, 1, 1, 1, 0, 0, 0],
+  [0, 1, 1, 0, 0, 0, 0, 0, 0, 0]
+]
+
+var TAMANO_PARED = 5
+var ALTO_PARED = 3
+var muro, premio
+var muros = document.querySelector('#muros')
+var premios = document.querySelector('#premios')
+var scoreEl = document.querySelector('#score')
+
+
+for (var x = 0; x < mapa.length; x++) {
+  for (var y = 0; y < mapa[x].length; y++) {
+
+    var posicion = (x - mapa.length/2)*TAMANO_PARED + ' ' + 1.5 +
+      ' ' + (y - mapa[x].length/2)*TAMANO_PARED
+
+    if (mapa[x][y] == 0) {
+      continue
+    } else if(mapa[x][y] == 1) {
+      // muro
+      muro = document.createElement('a-box')
+      muros.appendChild(muro)
+      muro.setAttribute('color', '#fff')
+      muro.setAttribute('material', 'src: #pared')
+      muro.setAttribute('width', TAMANO_PARED)
+      muro.setAttribute('depth', TAMANO_PARED)
+      muro.setAttribute('height', ALTO_PARED)
+      muro.setAttribute('position', posicion)
+      muro.setAttribute('static-body', '')
+    } else if(mapa[x][y] == 2) {
+      // jugador
+      document.querySelector('#jugador')
+        .setAttribute('position', posicion)
+    } else if (mapa[x][y] == 3) {
+      // premio
+      premio = document.createElement('a-sphere')
+      premios.appendChild(premio)
+      premio.setAttribute('position', posicion)
+      premio.setAttribute('class', 'premio')
+      premio.setAttribute('color', 'tomato')
+      premio.setAttribute('radius', '1')
+    }
+  }
+}
+
+var premios = Array.from(document.querySelectorAll('.premio'))
+var score = premios.length
+
+scoreEl.setAttribute('value', 'Te faltan ' + score + ' para ganar!')
+
+premios.forEach(function(premio){
+  premio.addEventListener('click', function(){
+    premio.setAttribute('visible', 'false')
+    score = score - 1
+    scoreEl.setAttribute('value', 'Te faltan ' + score + ' para ganar!')
+  
+    if (score <= 0) {
+      scoreEl.setAttribute('value', 'Ganaste!')      
+    }
+  })
+})
+
+    </script>
+  </body>
+</html>
